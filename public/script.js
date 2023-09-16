@@ -155,6 +155,12 @@ function run() {
             addItem(`<i>Program exited</i>`);
             resultsDiv.removeChild(document.getElementById("stdin"));
             break;
+          case "error":
+            reloadUI();
+            addItem(`<br><i style="color: red">Error: ${wsJson.message}</i>`);
+            addItem(`<br><i>Program exited</i>`);
+            resultsDiv.removeChild(document.getElementById("stdin"));
+            break;
         }
       }
     })

@@ -29,7 +29,7 @@ class Executor {
   /**
    * @type {childProcess.ChildProcessWithoutNullStreams}
    */
-  #process = null;
+  theProcess = null;
 
   /**
    * Initiates the executor
@@ -75,22 +75,23 @@ class Executor {
     this.args.push(`--file=${this.sourceCodeDestination}`);
 
     // Spawn it
-    this.#process = childProcess.spawn(zephyrExecutable, this.args, {
+    this.theProcess = childProcess.spawn(zephyrExecutable, this.args, {
       cwd: config.cwd
     });
     process.stdin.setEncoding('utf-8');
 
     // Register events
-    this.#process.stdout.on('data', (data) => {
+    this.theProcess.stdout.on('data', (data) => {
       const stringData = Buffer.from(data).toString();
       this.callEvent('stdout', stringData);
     });
 
-    this.#process.stderr.on('data', (data) => {
-      console.log(Buffer.from(data).toString())
+    this.theProcess.stderr.on('data', (data) => {
+      const stringData = Buffer.from(data).toString();
+      this.callEvent('stderr', stringData);
     })
 
-    this.#process.on('exit', () => {
+    this.theProcess.on('exit', () => {
       this.dipose();
       this.callEvent('exit', null);
     });
@@ -101,13 +102,13 @@ class Executor {
    * @param {string} string 
    */
   sendStdin(string) {
-    if (this.#process == null) {
+    if (this.theProcess == null) {
       throw "Process not started";
     }
 
     // Send it
-    this.#process.stdin.write(string + "\r\n");
-    //this.#process.stdin.end();
+    this.theProcess.stdin.write(string + "\r\n");
+    //this.theProcess.stdin.end();
   }
 
   /**

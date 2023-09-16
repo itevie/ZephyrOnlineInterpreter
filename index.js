@@ -6,7 +6,19 @@ const ws = require("ws");
 const Executor = require("./executor");
 const config = require("./config.json");
 const Convert = require('ansi-to-html');
+const path = require("path");
 const converter = new Convert();
+
+// Check programs
+if (!fs.existsSync("./programs")) {
+  fs.mkdirSync("./programs");
+} else {
+  // Clear it
+  let files = fs.readdirSync("./programs");
+  for (const file of files) {
+    fs.rmSync(path.join(__dirname + "/programs", file));
+  }
+}
 
 // Create app
 const app = express();
@@ -33,7 +45,7 @@ app.post("/execute", (req, res) => {
   const id = uuid.v4();
   const executor = new Executor(req.body.source, [
     "--file-access=n",
-    "--max-iterations=100",
+    "--max-iterations=10",
     "--os-apis=false",
     "--can-spawn-processes=false"
   ]);
@@ -53,6 +65,7 @@ const wsServer = new ws.Server({ noServer: true });
 wsServer.on('connection', socket => {
   let executorId = null;
   let hasStarted = false;
+  let isFinished = false;
 
   function error(text) {
     socket.send(JSON.stringify({
@@ -107,7 +120,7 @@ wsServer.on('connection', socket => {
           });
 
           executor.on("stderr", (message) => {
-            console.log(message);
+            error(message);
           });
 
           executor.on("exit", () => {
@@ -115,11 +128,19 @@ wsServer.on('connection', socket => {
               type: "done"
             }));
             socket.close();
+            isFinished = true;
           });
 
           hasStarted = true;
 
           executor.execute();
+
+          setTimeout(() => {
+            if (!isFinished) {
+              error(`Program took too long to complete (max time is ${config.executionLimit} seconds)`);
+              executor?.theProcess?.kill("SIGKILL");
+            }
+          }, config.executionLimit * 1000);
           break;
         case "stdin":
           if (hasStarted) {

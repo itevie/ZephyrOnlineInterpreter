@@ -1,5 +1,6 @@
 {
   "executable": "C:\\Users\\Isabella\\Documents\\Projects\\vs2022\\Zephyr\\bin\\Debug\\net6.0\\Zephyr.exe",
   "cwd": "C:\\Users\\Isabella\\Documents\\Projects\\vs2022\\Zephyr\\bin\\Debug\\net6.0",
-  "port": "8000"
+  "port": "8000",
+  "executionLimit": 100
 }
