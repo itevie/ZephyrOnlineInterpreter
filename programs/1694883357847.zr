@@ -1,0 +1,1 @@
+var a = console.readLine();console.writeLine(a);

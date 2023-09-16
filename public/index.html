@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+  <script src="/script.js"></script>
+  <title>Document</title>
+</head>
+<body>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <label class="top-bar-title">Zephyr Online Interpreter</label>
+    <button onclick="run()" class="top-bar-run" id="run-button">
+      Run
+    </button>
+  </div>
+  <div id="content">
+    <div id="editor-container"></div>
+    <div class="right-column">
+      <div id="results-container">
+        <label class="results-label">Console</label>
+        <div id="results"></div>
+      </div>
+      <div class="quick-actions">
+        <label class="results-label">Quick Actions</label>
+        <div class="quick-action-contents">
+          <label>Save</label>
+          <div class="quick-action-section">
+            <input placeholder="my-amazing-project"><button>Save</button>
+          </div>
+          <label>Load</label>
+          <div class="quick-action-section">
+            <select>
+              <option default>Select your file</option>
+            </select><button>Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

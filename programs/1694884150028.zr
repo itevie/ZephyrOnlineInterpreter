@@ -1,0 +1,1 @@
+console.write("Your name: "); var name = console.readLine(); console.writeLine(name);
