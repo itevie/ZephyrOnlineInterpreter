@@ -1,0 +1,59 @@
+// This will teach you how to use events
+
+// Create an event
+event int numberChange;
+
+// Create functions that will listen to this
+func a(num) {
+  console.writeLine(num);
+}
+
+func b(num) {
+  console.writeLine(num + 1);
+}
+
+func c(num) {
+  console.writeLine(num + 2);
+}
+
+// Here are the different ways a function can become a listener
+numberChange += a;
+numberChange.subscribe(b);
+Event.subscribe(numberChange, c);
+
+// Now we can call them using the following methods:
+console.writeLine("\n--- Method 1 ---\n");
+numberChange(1); // Calling directly like a function
+
+console.writeLine("\n--- Method 2 ---\n");
+numberChange.call(1); // Or using the Event.call method
+
+// NOTE: when calling the event, exactly one parameter must be provided
+// The type of this parameter must be the type you made the event with
+// For example, with this event numberChange, every call's parameter must be of type int
+// Though, this can be any type at all string, object, function, etc.
+
+// To un-listen we can do one of the following:
+numberChange -= a;
+numberChange.unsubscribe(b);
+
+// Now only c is subscribed:
+console.writeLine("\n--- After removal ---\n");
+numberChange(1);
+
+// We can also remove every listener at once:
+numberChange.removeAllListeners();
+
+console.writeLine("\n--- After removal of all ---\n");
+numberChange(1);
+
+// Re-adding
+numberChange += a;
+numberChange += b;
+numberChange += c;
+
+// Getting all listeners
+console.writeLine("\n--- All listeners ---\n");
+console.writeLine(numberChange.getListeners());
+
+// And thats all for events!

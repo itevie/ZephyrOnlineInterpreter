@@ -1,6 +1,6 @@
 let editor = null;
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@latest/min/vs' }});
   window.MonacoEnvironment = { getWorkerUrl: () => proxy };
 
@@ -14,7 +14,14 @@ document.addEventListener("DOMContentLoaded", () => {
   require(["vs/editor/editor.main"], function () {
     editor = monaco.editor.create(document.getElementById('editor-container'), {
       value: [
-        'console.write("Your name: "); var name = console.readLine(); console.writeLine(name);'
+`// All functions currently
+console.writeLine({
+  Any, Array, console, Evaluator, Event, Files, Float, Integer, Json, Math, Modifiers,
+  Net, Object, Process, Random, Regex, _scope, String, Threading, Timers, Variable
+});
+
+// Try loading a preset from the bottom right!
+`
       ].join('\n'),
       theme: 'vs-dark',
     });
@@ -29,6 +36,30 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
+  // Load presets
+  const presetsRes = await fetch("/presets");
+  const presets = (await presetsRes.json()).presets;
+
+  for (const preset of presets) {
+    const option = document.createElement("option");
+    option.text = preset;
+    option.value = preset;
+    document.getElementById("preset-select").add(option);
+  }
+
+  // Wait for monaco to load
+  setTimeout(async () => {
+    // Check the params
+    let params = (new URL(document.location)).searchParams;
+
+    // Check auto-load preset
+    let preset = params.get("preset");
+    if (preset) await loadPreset(preset);
+
+    // Check for auto-run
+    if (params.has("autorun")) run();
+  }, 500);
+
   reloadUI(true);
 });
 
@@ -38,6 +69,10 @@ function reloadUI(resetReults) {
 
   if (resetReults) {
     document.getElementById("results").innerHTML = `<center><i>Click Run to get output</i></center>`;
+  }
+
+  if (document.getElementById("running-status")) {
+    document.getElementById("results").innerHTML = ``;
   }
 }
 
@@ -59,7 +94,8 @@ function run() {
   setStatus("Initialising...");
 
   // Collect source
-  const sourceCode = editor.getValue();
+  let sourceCode = editor.getValue();
+  sourceCode = `console.write("");` + sourceCode;
 
   try {
     // Intialise it
@@ -127,26 +163,30 @@ function run() {
         document.getElementById("results").scrollTo({ top: document.getElementById("results").scrollHeight, behavior: 'auto' });
       }
 
+      let firstStdout = true;
+
       socket.onmessage = function(event) {
         const wsJson = JSON.parse(event.data);
 
         switch (wsJson.type) {
           case "ready":
-            // Start execution
-            document.getElementById("results").innerHTML = "";
-
-            let textBox = document.createElement("input");
-            textBox.id = "stdin";
-            textBox.classList.add("stdin");
-            document.getElementById("results").appendChild(textBox);
-            textBox.focus();
-            updateStdin();
-
+            setStatus("Waiting for first output...");
             socket.send(JSON.stringify({
               type: "start"
             }));
             break;
           case "stdout":
+            if (firstStdout) {
+              document.getElementById("results").innerHTML = "";
+
+              let textBox = document.createElement("input");
+              textBox.id = "stdin";
+              textBox.classList.add("stdin");
+              document.getElementById("results").appendChild(textBox);
+              textBox.focus();
+              updateStdin();
+              firstStdout = false;
+            }
             addItem(wsJson.htmlMessage);
             updateStdin();
             break;
@@ -166,4 +206,39 @@ function run() {
     })
   } catch (err) {
   }
+}
+
+async function loadPreset(name) {
+  // Get the selected option
+  const presetSelect = document.getElementById("preset-select");
+  const value = name || presetSelect.options[presetSelect.selectedIndex].value;
+
+  // user has not selected a preset
+  if (value == "Select a preset") {
+    return Swal.fire({
+      title: "Oops",
+      text: "Please select a preset",
+      icon: "warning"
+    });
+  }
+
+  async function loadPreset() {
+    // Fetch the preset data
+    const val = await fetch(`/presets/${value}`);
+    editor.getModel().setValue(await val.text());
+  }
+
+  if (name) return loadPreset();
+
+  // Confirm user wants to override
+  Swal.fire({
+    title: "Confirm",
+    text: `Are you sure you want to override your current document with the preset ${value}?`,
+    icon: "question",
+    showCancelButton: true
+  }).then(async res => {
+    if (res.isConfirmed) {
+      loadPreset();
+    }
+  })
 }

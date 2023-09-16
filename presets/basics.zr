@@ -1,0 +1,11 @@
+// Here are the basics of Zephyr
+
+// Printing to the console
+console.writeLine("Hello World!");
+
+// Getting input from the console
+console.write("What is your name? ");
+var name = console.readLine(); // And creating variables
+
+// Using the variables
+console.writeLine("Hello! You name is " + name);

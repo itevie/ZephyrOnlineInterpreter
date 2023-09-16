@@ -1,0 +1,7 @@
+// All functions currently
+console.writeLine({
+  Any, Array, console, Evaluator, Event, Files, Float, Integer, Json, Math, Modifiers,
+  Net, Object, Process, Random, Regex, _scope, String, Threading, Timers, Variable
+});
+
+// Try loading a preset from the bottom right!

@@ -17,6 +17,8 @@ class Executor {
    */
   sourceCodeDestination = null;
 
+  sourceCode = "";
+
   /**
    * @type {object}
    */
@@ -37,6 +39,7 @@ class Executor {
    */
   constructor(sourceCode, args) {
     this.args = args;
+    this.sourceCode = sourceCode;
 
     // Create the file
     this.fileId = Date.now();
@@ -69,15 +72,27 @@ class Executor {
   /**
    * Executes the file
    */
-  execute() {
-    const zephyrExecutable = config.executable;
+  execute(replMode = false) {
+    const zephyrExecutable = config.executable.replace(/__dirname/g, __dirname);
 
-    this.args.push(`--file=${this.sourceCodeDestination}`);
+    if (!replMode) {
+      this.args.push(`--file=${this.sourceCodeDestination}`);
+    }
+
+    const options = {
+      cwd: config.cwd
+    }
+
+    // For replit
+    if (config.useEnv) {
+      options.env = {
+        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+        "DOTNET_BUNDLE_EXTRACT_BASE_DIR": __dirname + "/Extracted"
+      }
+    }
 
     // Spawn it
-    this.theProcess = childProcess.spawn(zephyrExecutable, this.args, {
-      cwd: config.cwd
-    });
+    this.theProcess = childProcess.spawn(zephyrExecutable, this.args, options);
     process.stdin.setEncoding('utf-8');
 
     // Register events

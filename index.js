@@ -20,6 +20,8 @@ if (!fs.existsSync("./programs")) {
   }
 }
 
+const presets = fs.readdirSync(__dirname + "/presets");
+
 // Create app
 const app = express();
 app.use(bodyParser.json());
@@ -31,6 +33,25 @@ app.get("/", (req, res) => {
 })
 
 const executions = new Map();
+
+// For getting the list of presets
+app.get("/presets", (req, res) => {
+  return res.status(200).send({
+    presets
+  });
+});
+
+// For getting the list of presets
+app.get("/presets/:id", (req, res) => {
+  // Check if it exists
+  if (presets.includes(req.params.id)) {
+    return res.status(200).send(fs.readFileSync(__dirname + "/presets/" + req.params.id));
+  } else {
+    return res.status(404).send({
+      message: `Cannot find the preset ${req.params.id}`
+    });
+  }
+});
 
 // Route for starting an execution
 app.post("/execute", (req, res) => {
